@@ -9,9 +9,8 @@ class FileRepository:
         self.db = db
 
     def get_by_id(self, file_id: str) -> Optional[File]:
-
         return self.db.query(File).filter(
-            and_(File.id == UUID(file_id), File.is_deleted == False)
+            and_(File.id == UUID(file_id), File.is_deleted.is_(False))
         ).first()
 
     def get_user_files(
@@ -21,12 +20,11 @@ class FileRepository:
         skip: int = 0,
         limit: int = 20
     ) -> List[File]:
-
         return self.db.query(File).filter(
             and_(
                 File.owner_id == UUID(user_id),
                 File.folder == folder,
-                File.is_deleted == False
+                File.is_deleted.is_(False)
             )
         ).offset(skip).limit(limit).all()
 

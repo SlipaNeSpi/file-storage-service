@@ -6,8 +6,6 @@ import pytest
 from uuid import uuid4
 from app.repositories.user_repository import UserRepository
 from app.repositories.file_repository import FileRepository
-from app.schemas.user import User
-from app.schemas.file import File
 
 
 class TestUserRepository:

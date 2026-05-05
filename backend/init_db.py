@@ -3,8 +3,6 @@
 """
 from app.database import engine, SessionLocal
 from app.schemas.base import Base
-from app.schemas.user import User
-from app.schemas.file import File
 from app.repositories.user_repository import UserRepository
 from app.utils.password_utils import PasswordUtils
 

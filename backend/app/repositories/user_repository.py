@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 from app.schemas.user import User
 from uuid import UUID
 from typing import Optional

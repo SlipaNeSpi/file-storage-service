@@ -6,7 +6,6 @@ import pytest
 from app.services.auth_service import AuthService
 from app.models.auth import UserRegister, UserLogin
 from app.repositories.user_repository import UserRepository
-from app.utils.password_utils import PasswordUtils
 
 
 class TestAuthService:
@@ -96,7 +95,7 @@ class TestAuthService:
             password="MyPassword123!"
         )
         
-        result = await auth_service.register(user_data)
+        await auth_service.register(user_data)
         
         # Retrieve user from DB
         user = user_repo.get_by_email("hashtest@example.com")

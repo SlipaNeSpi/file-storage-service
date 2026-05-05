@@ -1,5 +1,4 @@
 import io
-import pytest
 
 
 def test_upload_file(client, user_token):

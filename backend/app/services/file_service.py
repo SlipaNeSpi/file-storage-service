@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from app.schemas.file import File
 from app.repositories.file_repository import FileRepository
 from app.services.storage_service import StorageService
 from app.models.file import FileUploadResponse

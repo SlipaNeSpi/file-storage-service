@@ -4,7 +4,7 @@ from app.repositories.user_repository import UserRepository
 from app.repositories.file_repository import FileRepository
 from app.schemas.user import User
 from app.schemas.file import File
-from typing import List, Dict, Any
+from typing import List, Dict
 from uuid import UUID
 
 
@@ -25,7 +25,7 @@ class AdminService:
             # Подсчитываем статистику по файлам пользователя
             user_files = self.db.query(File).filter(
                 File.owner_id == user.id,
-                File.is_deleted == False
+                File.is_deleted.is_(False)
             ).all()
 
             total_size = sum(f.file_size for f in user_files)
@@ -58,7 +58,7 @@ class AdminService:
         # Получаем файлы пользователя
         files = self.db.query(File).filter(
             File.owner_id == UUID(user_id),
-            File.is_deleted == False
+            File.is_deleted.is_(False)
         ).all()
 
         total_size = sum(f.file_size for f in files)
@@ -151,7 +151,7 @@ class AdminService:
             file_type: str = None
     ) -> List[Dict]:
         """Получить все файлы в системе"""
-        query = self.db.query(File).filter(File.is_deleted == False)
+        query = self.db.query(File).filter(File.is_deleted.is_(False))
 
         if file_type:
             query = query.filter(File.file_type.contains(file_type))
@@ -179,7 +179,7 @@ class AdminService:
         """Удаление файла администратором"""
         file = self.db.query(File).filter(
             File.id == UUID(file_id),
-            File.is_deleted == False
+            File.is_deleted.is_(False)
         ).first()
 
         if not file:
@@ -202,22 +202,22 @@ class AdminService:
         """Получить общую статистику для dashboard"""
         # Подсчёт пользователей
         total_users = self.db.query(func.count(User.id)).scalar()
-        active_users = self.db.query(func.count(User.id)).filter(User.is_active == True).scalar()
+        active_users = self.db.query(func.count(User.id)).filter(User.is_active.is_(True)).scalar()
         admin_users = self.db.query(func.count(User.id)).filter(User.role == 'admin').scalar()
 
         # Подсчёт файлов
-        total_files = self.db.query(func.count(File.id)).filter(File.is_deleted == False).scalar()
-        deleted_files = self.db.query(func.count(File.id)).filter(File.is_deleted == True).scalar()
+        total_files = self.db.query(func.count(File.id)).filter(File.is_deleted.is_(False)).scalar()
+        deleted_files = self.db.query(func.count(File.id)).filter(File.is_deleted.is_(True)).scalar()
 
         # Объём хранилища
-        total_storage = self.db.query(func.sum(File.file_size)).filter(File.is_deleted == False).scalar() or 0
+        total_storage = self.db.query(func.sum(File.file_size)).filter(File.is_deleted.is_(False)).scalar() or 0
         total_storage_gb = round(total_storage / 1024 / 1024 / 1024, 2)
 
         # Распределение по типам файлов
         file_types = self.db.query(
             File.file_type,
             func.count(File.id).label('count')
-        ).filter(File.is_deleted == False).group_by(File.file_type).all()
+        ).filter(File.is_deleted.is_(False)).group_by(File.file_type).all()
 
         return {
             "users": {
@@ -251,7 +251,7 @@ class AdminService:
             func.count(File.id).label('file_count'),
             func.sum(File.file_size).label('total_size')
         ).join(File, User.id == File.owner_id).filter(
-            File.is_deleted == False
+            File.is_deleted.is_(False)
         ).group_by(User.id).order_by(desc('total_size')).limit(limit).all()
 
         return [
