@@ -1,9 +1,10 @@
 import React from 'react';
 import { FileItem } from './FileItem';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import type { FileItem as FileItemType } from '../../types';
 
 interface FileListProps {
-  files: any[];
+  files: FileItemType[];
   isLoading: boolean;
   onDownload: (id: string, filename: string) => void;
   onDelete: (id: string, filename: string) => void;
@@ -22,9 +23,7 @@ export const FileList: React.FC<FileListProps> = ({
   if (files.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">
-          📂 Файлов пока нет
-        </p>
+        <p className="text-gray-500 text-lg">📂 Файлов пока нет</p>
         <p className="text-gray-400 text-sm mt-2">
           Загрузите первый файл, используя форму выше
         </p>

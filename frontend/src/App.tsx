@@ -7,6 +7,7 @@ import { Card } from './components/common/Card';
 import { FileUpload } from './components/files/FileUpload';
 import { FileList } from './components/files/FileList';
 import toast, { Toaster } from 'react-hot-toast';
+import { AxiosError } from 'axios';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -15,7 +16,8 @@ function App() {
   const [isUploading, setIsUploading] = useState(false);
 
   const { login, user, isAuthenticated, logout } = useAuthStore();
-  const { files, totalFiles, uploadFile, deleteFile, downloadFile, loadFiles } = useFiles();
+  const { files, totalFiles, uploadFile, deleteFile, downloadFile, loadFiles } =
+    useFiles();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +26,13 @@ function App() {
     try {
       await login(email, password);
       toast.success('Успешный вход!');
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Ошибка входа');
+    } catch (err: unknown) {
+      const message =
+        err instanceof AxiosError
+          ? (err.response?.data as { detail?: string })?.detail ||
+            'Ошибка входа'
+          : 'Ошибка входа';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -45,21 +52,20 @@ function App() {
     }
   };
 
-  // Экран после входа
   if (isAuthenticated && user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
         <Toaster position="top-right" />
 
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 📁 File Storage Service
               </h1>
               <p className="text-gray-600 mt-1">
-                {user.email} • <span className="font-semibold">{user.role}</span>
+                {user.email} •{' '}
+                <span className="font-semibold">{user.role}</span>
               </p>
             </div>
             <Button variant="secondary" onClick={handleLogout}>
@@ -67,7 +73,6 @@ function App() {
             </Button>
           </div>
 
-          {/* Upload Section */}
           <Card className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               Загрузить файл
@@ -75,13 +80,16 @@ function App() {
             <FileUpload onUpload={handleUpload} isUploading={isUploading} />
           </Card>
 
-          {/* Files List */}
           <Card>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">
                 Мои файлы ({totalFiles})
               </h2>
-              <Button variant="secondary" size="sm" onClick={() => loadFiles()}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => loadFiles()}
+              >
                 🔄 Обновить
               </Button>
             </div>
@@ -97,7 +105,6 @@ function App() {
     );
   }
 
-  // Экран входа
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Toaster position="top-right" />

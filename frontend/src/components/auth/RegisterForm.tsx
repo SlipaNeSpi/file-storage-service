@@ -4,19 +4,28 @@ import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
 export const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const { register } = useAuthStore();
   const navigate = useNavigate();
 
   const validate = () => {
-    const newErrors: any = {};
+    const newErrors: {
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
 
     if (!email) {
       newErrors.email = 'Email обязателен';
@@ -29,7 +38,8 @@ export const RegisterForm: React.FC = () => {
     } else if (password.length < 8) {
       newErrors.password = 'Пароль должен быть минимум 8 символов';
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      newErrors.password = 'Пароль должен содержать заглавные, строчные буквы и цифры';
+      newErrors.password =
+        'Пароль должен содержать заглавные, строчные буквы и цифры';
     }
 
     if (password !== confirmPassword) {
@@ -51,8 +61,13 @@ export const RegisterForm: React.FC = () => {
       await register(email, password);
       toast.success('Регистрация успешна! Теперь войдите.');
       navigate('/login');
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Ошибка регистрации');
+    } catch (err: unknown) {
+      const message =
+        err instanceof AxiosError
+          ? (err.response?.data as { detail?: string })?.detail ||
+            'Ошибка регистрации'
+          : 'Ошибка регистрации';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

@@ -4,11 +4,14 @@ import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuthStore();
@@ -44,8 +47,13 @@ export const LoginForm: React.FC = () => {
       await login(email, password);
       toast.success('Успешный вход!');
       navigate('/dashboard');
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Ошибка входа');
+    } catch (err: unknown) {
+      const message =
+        err instanceof AxiosError
+          ? (err.response?.data as { detail?: string })?.detail ||
+            'Ошибка входа'
+          : 'Ошибка входа';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

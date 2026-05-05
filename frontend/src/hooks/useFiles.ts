@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { filesAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import type { FileItem } from '../types';
+import { AxiosError } from 'axios';
 
 export const useFiles = () => {
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -14,7 +15,6 @@ export const useFiles = () => {
       const response = await filesAPI.list(folder);
       console.log('API Response:', response); // Для отладки
 
-      // Backend возвращает массив напрямую
       if (Array.isArray(response)) {
         setFiles(response);
         setTotalFiles(response.length);
@@ -22,8 +22,8 @@ export const useFiles = () => {
         setFiles(response.files);
         setTotalFiles(response.total || 0);
       }
-    } catch (error: any) {
-      console.error('Load files error:', error);
+    } catch (err: unknown) {
+      console.error('Load files error:', err);
       toast.error('Ошибка загрузки файлов');
     } finally {
       setIsLoading(false);
@@ -36,9 +36,13 @@ export const useFiles = () => {
       toast.success(`Файл "${file.name}" загружен!`);
       await loadFiles();
       return response;
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Ошибка загрузки');
-      throw error;
+    } catch (err: unknown) {
+      const message =
+        err instanceof AxiosError
+          ? (err.response?.data as { detail?: string })?.detail || 'Ошибка загрузки'
+          : 'Ошибка загрузки';
+      toast.error(message);
+      throw err;
     }
   };
 
@@ -47,7 +51,7 @@ export const useFiles = () => {
       await filesAPI.delete(fileId);
       toast.success(`Файл "${filename}" удалён`);
       await loadFiles();
-    } catch (error: any) {
+    } catch {
       toast.error('Ошибка удаления файла');
     }
   };
@@ -64,7 +68,7 @@ export const useFiles = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       toast.success(`Файл "${filename}" скачан`);
-    } catch (error: any) {
+    } catch {
       toast.error('Ошибка скачивания файла');
     }
   };
