@@ -64,7 +64,7 @@ async def toggle_user_status(
 @router.patch("/users/{user_id}/role", summary="Change user role (Admin)")
 async def change_user_role(
     user_id: str,
-    new_role: str = Query(..., regex="^(user|admin)$"),
+    new_role: str = Query(..., pattern="^(user|admin)$"),
     admin: dict = Depends(require_admin),
     db: Session = Depends(get_db)
 ):

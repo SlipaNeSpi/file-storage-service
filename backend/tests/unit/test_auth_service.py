@@ -6,6 +6,7 @@ import pytest
 from app.services.auth_service import AuthService
 from app.models.auth import UserRegister, UserLogin
 from app.repositories.user_repository import UserRepository
+from pydantic import ValidationError
 
 
 class TestAuthService:
@@ -46,30 +47,20 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_register_invalid_email(self, db):
-        """Test registration with invalid email format"""
-        auth_service = AuthService(db)
-        
-        user_data = UserRegister(
-            email="invalid-email",
-            password="SecurePass123!"
-        )
-        
-        with pytest.raises(ValueError, match="Invalid email"):
-            await auth_service.register(user_data)
+        with pytest.raises(ValidationError):
+            UserRegister(
+                email="invalid-email",
+                password="SecurePass123!"
+            )
 
     @pytest.mark.asyncio
     async def test_register_weak_password(self, db):
-        """Test registration with weak password"""
-        auth_service = AuthService(db)
-        
-        # Password too short
-        user_data = UserRegister(
-            email="test@example.com",
-            password="Short1"  # Less than 8 chars
-        )
-        
-        with pytest.raises(ValueError):
-            await auth_service.register(user_data)
+        with pytest.raises(ValidationError):
+            UserRegister(
+                email="test@example.com",
+                password="Short1"
+            )
+
 
     @pytest.mark.asyncio
     async def test_register_password_no_uppercase(self, db):
