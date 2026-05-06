@@ -9,8 +9,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
-  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
+  IMAGE_NAME_BACKEND: ghcr.io/slipanespi/file-storage-service/backend
+  IMAGE_NAME_FRONTEND: ghcr.io/slipanespi/file-storage-service/frontend
 
 jobs:
   # =============================================
