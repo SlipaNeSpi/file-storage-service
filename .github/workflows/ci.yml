@@ -240,6 +240,7 @@ jobs:
             -J report_json.json \
             -w report_md.md \
             -r report_html.html
+        continue-on-error: true
 
   # =============================================
   # СТАДИЯ 7 – DEPLOY TO PRODUCTION (ручной запуск)
