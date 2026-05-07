@@ -231,9 +231,18 @@ jobs:
         uses: zaproxy/action-baseline@v0.13.0
         with:
           target: http://localhost:8000
+          cmd_options: '-J report_json.json -w report_md.md -r report_html.html'
           fail_action: false
           allow_issue_writing: false
-          artifact_name: zap-scan
+
+      - name: Upload ZAP report manually
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: |
+            report_html.html
+            report_json.json
+            report_md.md
 
   # =============================================
   # СТАДИЯ 7 – DEPLOY TO PRODUCTION (ручной запуск)
