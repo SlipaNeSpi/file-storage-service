@@ -233,13 +233,13 @@ jobs:
           chmod -R 777 ${{ github.workspace }}
           docker run --rm \
             -v ${{ github.workspace }}:/zap/wrk/:rw \
+            --network file-storage-service_testnet \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
-            -t http://localhost:8000 \
+            -t http://backend:8000 \
             -J report_json.json \
             -w report_md.md \
             -r report_html.html
-        continue-on-error: true
 
   # =============================================
   # СТАДИЯ 7 – DEPLOY TO PRODUCTION (ручной запуск)
