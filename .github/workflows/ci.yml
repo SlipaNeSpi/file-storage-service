@@ -229,6 +229,7 @@ jobs:
 
       - name: Run OWASP ZAP Baseline Scan
         run: |
+          chmod -R 777 ${{ github.workspace }}
           docker run --rm \
             -v ${{ github.workspace }}:/zap/wrk/:rw \
             ghcr.io/zaproxy/zaproxy:stable \
