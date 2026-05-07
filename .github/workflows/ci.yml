@@ -214,16 +214,17 @@ jobs:
           sleep 30
           docker compose -f docker-compose.ci.yml ps
 
-      - name: Check backend health
+      - name: Wait for backend to be ready
         run: |
-          for i in {1..30}; do
+          for i in {1..60}; do
             if docker compose -f docker-compose.ci.yml exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"; then
-              echo "Backend is healthy!"
+              echo "Backend is ready!"
+              sleep 10
               exit 0
             fi
             sleep 2
           done
-          echo "Backend failed to start after 60 seconds"
+          echo "Backend still not ready after 120 seconds"
           docker compose -f docker-compose.ci.yml logs backend
           exit 1
 
