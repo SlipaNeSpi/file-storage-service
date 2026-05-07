@@ -34,7 +34,7 @@ services:
       MINIO_BUCKET_NAME: files
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
     ports:
-      - "8000:8000"
+      - "8000:8000"   
     depends_on:
       - postgres
       - minio
