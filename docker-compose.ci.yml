@@ -7,7 +7,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: testpass
       POSTGRES_DB: file_storage_test
-    # Для CI-раннера не нужны постоянные тома
     tmpfs:
       - /var/lib/postgresql/data
     networks:
@@ -25,7 +24,7 @@ services:
       - testnet
 
   backend:
-    image: ${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHORT_SHA}
+    image: ${BACKEND_IMAGE}
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:testpass@postgres:5432/file_storage_test
       SECRET_KEY: test-secret-key-for-ci
@@ -43,7 +42,7 @@ services:
       - testnet
 
   frontend:
-    image: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHORT_SHA}
+    image: ${FRONTEND_IMAGE}
     ports:
       - "80:80"
     depends_on:
