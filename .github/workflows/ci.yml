@@ -220,6 +220,7 @@ jobs:
           target: http://localhost:8000
           cmd_options: '-r zap_report.html'
           fail_action: false   # не останавливает пайплайн при предупреждениях
+          allow_issue_writing: false
 
       - name: Upload ZAP report
         uses: actions/upload-artifact@v4
