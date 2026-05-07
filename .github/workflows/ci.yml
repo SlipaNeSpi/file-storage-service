@@ -208,9 +208,9 @@ jobs:
           CI_REGISTRY_IMAGE: ${{ env.REGISTRY }}/${{ github.repository }}
           CI_COMMIT_SHORT_SHA: ${{ github.sha }}
         run: |
-          docker-compose -f docker-compose.ci.yml up -d
+          docker compose -f docker-compose.ci.yml up -d
           sleep 20
-          docker-compose -f docker-compose.ci.yml ps
+          docker compose -f docker-compose.ci.yml ps
 
   # =============================================
   # СТАДИЯ 6 – DAST (OWASP ZAP Baseline)
