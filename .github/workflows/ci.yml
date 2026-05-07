@@ -222,11 +222,6 @@ jobs:
           fail_action: false   # не останавливает пайплайн при предупреждениях
           allow_issue_writing: false
 
-      - name: Upload ZAP report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: zap_report.html
 
   # =============================================
   # СТАДИЯ 7 – DEPLOY TO PRODUCTION (ручной запуск)
