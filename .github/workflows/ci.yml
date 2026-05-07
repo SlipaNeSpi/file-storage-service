@@ -233,6 +233,7 @@ jobs:
           target: http://localhost:8000
           fail_action: false
           allow_issue_writing: false
+          artifact_name: zap-scan
 
   # =============================================
   # СТАДИЯ 7 – DEPLOY TO PRODUCTION (ручной запуск)
