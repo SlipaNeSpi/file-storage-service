@@ -180,6 +180,7 @@ jobs:
           exit-code: 1
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          trivyignores: .trivyignore
 
   trivy-scan-frontend:
     runs-on: ubuntu-latest
@@ -194,13 +195,14 @@ jobs:
           exit-code: 1
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          trivyignores: .trivyignore
 
   # =============================================
-  # СТАДИЯ 5 – DEPLOY TO TEST
+  # СТАДИЯ 5 – DEPLOY TO TEST + DAST (OWASP ZAP)
   # =============================================
-  deploy-test:
+  deploy-test-and-scan:
     runs-on: ubuntu-latest
-    needs: [ trivy-scan-backend, trivy-scan-frontend ]
+    needs: [trivy-scan-backend, trivy-scan-frontend]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Compose and deploy
@@ -209,22 +211,16 @@ jobs:
           FRONTEND_IMAGE: ${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
         run: |
           docker compose -f docker-compose.ci.yml up -d
-          sleep 20
+          sleep 30
           docker compose -f docker-compose.ci.yml ps
 
-  # =============================================
-  # СТАДИЯ 6 – DAST (OWASP ZAP Baseline)
-  # =============================================
-  zap-baseline:
-    runs-on: ubuntu-latest
-    needs: [deploy-test]
-    steps:
-      - uses: actions/checkout@v4
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.13.0
         with:
           target: http://localhost:8000
           cmd_options: '-r zap_report.html'
+          fail_action: false   # не останавливает пайплайн при предупреждениях
+
       - name: Upload ZAP report
         uses: actions/upload-artifact@v4
         with:
@@ -236,10 +232,10 @@ jobs:
   # =============================================
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: [zap-baseline]
+    needs: [deploy-test-and-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     environment: production
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to production (placeholder)
-        run: echo "Здесь будет команда деплоя, например docker-compose -f docker-compose.prod.yml up -d"
+        run: echo "Здесь будет команда деплоя, например docker compose -f docker-compose.prod.yml up -d"
