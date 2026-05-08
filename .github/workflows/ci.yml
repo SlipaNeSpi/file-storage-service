@@ -215,7 +215,8 @@ jobs:
       - name: Install OPA Gatekeeper
         run: |
           kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/deploy/gatekeeper.yaml
-          kubectl wait --for=condition=ready pod -l app=gatekeeper --timeout=60s -n gatekeeper-system
+          sleep 30
+          kubectl wait --for=condition=ready pod -l gatekeeper.sh/system=yes --timeout=60s -n gatekeeper-system
 
       - name: Apply security policies
         run: |
