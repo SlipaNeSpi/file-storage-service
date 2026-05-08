@@ -206,20 +206,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Create kind cluster
+        uses: helm/kind-action@v1
         with:
-          version: 'latest'
-
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          cluster_name: test-cluster
+          wait: 120s
 
       - name: Install OPA Gatekeeper
         run: |
           kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/deploy/gatekeeper.yaml
-          kubectl wait --for=condition=ready pod -l app=gatekeeper --timeout=60s
+          kubectl wait --for=condition=ready pod -l app=gatekeeper --timeout=60s -n gatekeeper-system
 
       - name: Apply security policies
         run: |
