@@ -278,9 +278,10 @@ jobs:
 
       - name: Run OWASP ZAP Baseline Scan
         run: |
-          chmod -R 777 ${{ github.workspace }}
+          mkdir -p zap_work
+          chmod 777 zap_work
           docker run --rm \
-            -v ${{ github.workspace }}:/zap/wrk/:rw \
+            -v ${{ github.workspace }}/zap_work:/zap/wrk/:rw \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8000 \
