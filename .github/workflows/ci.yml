@@ -249,12 +249,6 @@ jobs:
             --from-literal=minio-access-key="minioadmin" \
             --from-literal=minio-secret-key="minioadmin" \
             --dry-run=client -o yaml | kubectl apply -f -
-
-
-      - name: Wait for databases
-        run: |
-          kubectl wait --for=condition=available deployment/postgres -n file-storage-test --timeout=120s
-          kubectl wait --for=condition=available deployment/minio -n file-storage-test --timeout=120s
           
 
       - name: Deploy to Kubernetes
