@@ -51,7 +51,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm audit --audit-level=high
-        continue-on-error: true   # предупреждения не ломают пайплайн
+        continue-on-error: true
 
   # =============================================
   # СТАДИЯ 2 – TEST
@@ -198,11 +198,11 @@ jobs:
           trivyignores: .trivyignore
 
   # =============================================
-  # СТАДИЯ 5 – DEPLOY TO TEST + DAST (OWASP ZAP)
+  # СТАДИЯ 5 – DEPLOY TO KUBERNETES + DAST
   # =============================================
   deploy-test-and-scan:
     runs-on: ubuntu-latest
-    needs: [ trivy-scan-backend, trivy-scan-frontend ]
+    needs: [trivy-scan-backend, trivy-scan-frontend]
     steps:
       - uses: actions/checkout@v4
 
@@ -218,10 +218,12 @@ jobs:
           sleep 30
           kubectl wait --for=condition=ready pod -l gatekeeper.sh/system=yes --timeout=60s -n gatekeeper-system
 
+
       - name: Apply security policies
         run: |
           kubectl apply -f k8s/gatekeeper/constrainttemplate-privileged.yaml
           kubectl apply -f k8s/gatekeeper/constraint-privileged.yaml
+
 
       - name: Scan Kubernetes manifests (Checkov)
         uses: bridgecrewio/checkov-action@master
@@ -230,9 +232,11 @@ jobs:
           framework: kubernetes
           soft_fail: true
 
+
       - name: Set image tags
         run: |
           sed -i "s|:latest|:${{ github.sha }}|g" k8s/*.yaml
+
 
       - name: Create namespace and secrets
         run: |
@@ -245,6 +249,7 @@ jobs:
             --from-literal=minio-secret-key="${{ secrets.MINIO_SECRET_KEY }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
+
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/backend-deployment.yaml
@@ -253,25 +258,29 @@ jobs:
           kubectl rollout status deployment/backend -n file-storage-test --timeout=120s
           kubectl rollout status deployment/frontend -n file-storage-test --timeout=120s
 
-      - name: Wait for backend to be ready
-        run: |
-          for i in {1..30}; do
-            if kubectl exec -n file-storage-test deployment/backend -- python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"; then
-              echo "Backend is ready!"
-              break
-            fi
-            sleep 5
-          done
 
-      - name: Run OWASP ZAP Baseline Scan
+      - name: Wait for backend and port-forward
         run: |
           kubectl port-forward -n file-storage-test svc/backend 8000:8000 &
           sleep 5
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/health; then
+              echo "Backend is healthy!"
+              break
+            fi
+            sleep 2
+          done
+          true
+
+      
+      - name: Run OWASP ZAP Baseline Scan
+        run: |
+          chmod -R 777 ${{ github.workspace }}
           docker run --rm \
             -v ${{ github.workspace }}:/zap/wrk/:rw \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
-            -t http://host.docker.internal:8000 \
+            -t http://localhost:8000 \
             -J report_json.json \
             -w report_md.md \
             -r report_html.html
@@ -288,4 +297,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to production (placeholder)
-        run: echo "Здесь будет команда деплоя, например docker compose -f docker-compose.prod.yml up -d"
+        run: echo "Здесь будет команда деплоя, например kubectl apply -f k8s/ -n file-storage-prod"
