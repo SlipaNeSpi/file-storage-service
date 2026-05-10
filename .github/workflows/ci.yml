@@ -275,10 +275,10 @@ jobs:
             fi
             sleep 2
           done
-          # запускаем ZAP, пока порт‑форвард жив
+          # запускаем ZAP с сетью хоста
           mkdir -p zap_work
           chmod 777 zap_work
-          docker run --rm \
+          docker run --rm --network=host \
             -v ${{ github.workspace }}/zap_work:/zap/wrk/:rw \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
