@@ -251,6 +251,12 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
 
+      - name: Wait for databases
+        run: |
+          kubectl wait --for=condition=available deployment/postgres -n file-storage-test --timeout=120s
+          kubectl wait --for=condition=available deployment/minio -n file-storage-test --timeout=120s
+          
+
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/postgres-deployment.yaml
@@ -262,10 +268,12 @@ jobs:
           kubectl rollout status deployment/frontend -n file-storage-test --timeout=120s
 
 
-      - name: Wait for backend and port-forward
+      - name: Health-check and OWASP ZAP scan
         run: |
           kubectl port-forward -n file-storage-test svc/backend 8000:8000 &
+          PF_PID=$!
           sleep 5
+          # ждём до 60 секунд, пока бэкенд не ответит
           for i in {1..30}; do
             if curl -f http://localhost:8000/health; then
               echo "Backend is healthy!"
@@ -273,11 +281,7 @@ jobs:
             fi
             sleep 2
           done
-          true
-
-
-      - name: Run OWASP ZAP Baseline Scan
-        run: |
+          # запускаем ZAP, пока порт‑форвард жив
           mkdir -p zap_work
           chmod 777 zap_work
           docker run --rm \
@@ -288,6 +292,7 @@ jobs:
             -J report_json.json \
             -w report_md.md \
             -r report_html.html
+          kill $PF_PID || true
         continue-on-error: true
 
   # =============================================
