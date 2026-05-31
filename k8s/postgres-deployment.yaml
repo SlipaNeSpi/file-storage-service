@@ -22,7 +22,10 @@ spec:
             - name: POSTGRES_USER
               value: "postgres"
             - name: POSTGRES_PASSWORD
-              value: "testpass"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-password
             - name: POSTGRES_DB
               value: "file_storage_test"
           resources:
